@@ -13,11 +13,15 @@ actor {
   // ---- Mixins ----
   include BlobMixin();
 
-  // ---- Legacy stable variable (kept for upgrade compatibility, not used for auth) ----
+  // ---- Preserved stable variables for upgrade compatibility ----
+  stable let ADMIN_PRINCIPAL : Principal = Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe");
   let _accessControlState : AccessControl.AccessControlState = AccessControl.initState();
 
-  // ---- Admin ----
-  let ADMIN_PRINCIPAL : Principal = Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe");
+  // ---- Admin principals (both draft and live URL variants) ----
+  let ADMIN_PRINCIPALS : [Principal] = [
+    Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe"),
+    Principal.fromText("qwq4l-mjwka-op3ra-a5i2z-pnhar-7zyoo-jovrh-czfm5-vjrb3-wp22j-tqe"),
+  ];
 
   // ---- Types ----
   public type Episode = {
@@ -66,8 +70,15 @@ actor {
   };
 
   // ---- Helpers ----
+  func isAdmin(caller : Principal) : Bool {
+    for (p in ADMIN_PRINCIPALS.vals()) {
+      if (caller == p) { return true };
+    };
+    false;
+  };
+
   func requireAdmin(caller : Principal) {
-    if (caller != ADMIN_PRINCIPAL) {
+    if (not isAdmin(caller)) {
       Runtime.trap("Unauthorized: admin only");
     };
   };
@@ -84,7 +95,7 @@ actor {
 
   // ---- Admin check ----
   public query ({ caller }) func isCallerAdmin() : async Bool {
-    caller == ADMIN_PRINCIPAL;
+    isAdmin(caller);
   };
 
   // ---- Episode CRUD ----

@@ -41,15 +41,9 @@ export interface PodcastInfo {
   category: string;
 }
 
-export type UserRole = { admin: null } | { user: null } | { guest: null };
-
 export interface backendInterface {
-  // Authorization
-  _initializeAccessControlWithSecret(secret: string): Promise<void>;
-  getCallerUserRole(): Promise<UserRole>;
-  assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+  // Admin
   isCallerAdmin(): Promise<boolean>;
-  claimAdmin(): Promise<boolean>;
 
   // Episodes
   createEpisode(input: EpisodeInput): Promise<bigint>;

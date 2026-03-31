@@ -94,22 +94,6 @@ export function useIsAdmin() {
   });
 }
 
-export function useClaimAdmin() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (): Promise<boolean> => {
-      if (!actor) throw new Error("Not connected");
-      const result = await actor.claimAdmin();
-      if (!result) throw new Error("Claim returned false");
-      return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["isAdmin"] });
-    },
-  });
-}
-
 export function useCreateEpisode() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
