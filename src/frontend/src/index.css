@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "BricolageGrotesque";
+  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GeneralSans";
+  src: url("/assets/fonts/GeneralSans.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 1rem;
+    /* INDIE CITY RADIO dark theme - always dark */
+    --background: 0.09 0.01 262;
+    --foreground: 0.97 0.01 262;
+    --card: 0.14 0.012 262;
+    --card-foreground: 0.97 0.01 262;
+    --popover: 0.14 0.012 262;
+    --popover-foreground: 0.97 0.01 262;
+    --primary: 0.68 0.14 162;
+    --primary-foreground: 0.97 0 0;
+    --secondary: 0.2 0.01 262;
+    --secondary-foreground: 0.74 0.01 262;
+    --muted: 0.14 0.012 262;
+    --muted-foreground: 0.74 0.01 265;
+    --accent: 0.57 0.22 18;
+    --accent-foreground: 0.97 0 0;
+    --destructive: 0.57 0.22 18;
+    --destructive-foreground: 0.97 0 0;
+    --border: 0.2 0.01 262;
+    --input: 0.2 0.01 262;
+    --ring: 0.68 0.14 162;
+    --chart-1: 0.68 0.14 162;
+    --chart-2: 0.57 0.22 18;
+    --chart-3: 0.74 0.12 280;
+    --chart-4: 0.7 0.15 200;
+    --chart-5: 0.65 0.2 340;
+    --sidebar: 0.12 0.01 262;
+    --sidebar-foreground: 0.97 0.01 262;
+    --sidebar-primary: 0.68 0.14 162;
+    --sidebar-primary-foreground: 0.97 0 0;
+    --sidebar-accent: 0.2 0.01 262;
+    --sidebar-accent-foreground: 0.74 0.01 265;
+    --sidebar-border: 0.2 0.01 262;
+    --sidebar-ring: 0.68 0.14 162;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: "GeneralSans", sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "BricolageGrotesque", sans-serif;
+  }
+}
+
+@layer utilities {
+  .grid-bg {
+    background-image: linear-gradient(
+        rgba(255, 255, 255, 0.025) 1px,
+        transparent 1px
+      ), linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .gradient-text {
+    background: linear-gradient(90deg, #47bc96, #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-btn {
+    background: linear-gradient(90deg, #47bc96, #ffffff);
+    color: #0b0d12;
+  }
+
+  .gradient-btn:hover {
+    background: linear-gradient(90deg, #35a882, #e0e0e0);
+    color: #0b0d12;
+  }
+
+  .player-gradient {
+    background: linear-gradient(135deg, #1a4a3a, #47bc96);
+  }
+
+  .neon-blue-glow {
+    box-shadow: 0 0 20px rgba(71, 188, 150, 0.3);
+  }
+
+  .neon-red-glow {
+    box-shadow: 0 0 20px rgba(255, 59, 92, 0.3);
+  }
+}
