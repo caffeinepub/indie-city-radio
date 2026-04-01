@@ -43,11 +43,11 @@ import type {
 } from "../declarations/backend.did";
 import { useActor } from "../hooks/useActor";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import { useIsAdmin } from "../hooks/useIsAdmin";
 import {
   useAllEpisodes,
   useCreateEpisode,
   useDeleteEpisode,
-  useIsAdmin,
   usePodcastInfo,
   useSetPodcastInfo,
   useUpdateEpisode,
@@ -211,7 +211,6 @@ function EpisodeFormDialog({
       <DialogContent
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
         style={{ background: "#1A1C24", borderColor: "#2A2D38" }}
-        data-ocid="episode.dialog"
       >
         <DialogHeader>
           <DialogTitle className="font-display text-white">
@@ -230,10 +229,8 @@ function EpisodeFormDialog({
                 onChange={(e) => set("title", e.target.value)}
                 placeholder="Episode title"
                 style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-                data-ocid="episode.title.input"
               />
             </div>
-
             <div className="space-y-1.5">
               <Label className="text-wave-gray text-xs uppercase tracking-widest">
                 Publish Date
@@ -243,10 +240,8 @@ function EpisodeFormDialog({
                 value={form.publishedDate}
                 onChange={(e) => set("publishedDate", e.target.value)}
                 style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-                data-ocid="episode.date.input"
               />
             </div>
-
             <div className="space-y-1.5">
               <Label className="text-wave-gray text-xs uppercase tracking-widest">
                 Duration
@@ -256,7 +251,6 @@ function EpisodeFormDialog({
                 onChange={(e) => set("duration", e.target.value)}
                 placeholder="e.g. 45:30"
                 style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-                data-ocid="episode.duration.input"
               />
             </div>
           </div>
@@ -271,7 +265,6 @@ function EpisodeFormDialog({
               placeholder="Short episode description"
               rows={3}
               style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-              data-ocid="episode.description.textarea"
             />
           </div>
 
@@ -285,11 +278,9 @@ function EpisodeFormDialog({
               placeholder="Detailed show notes, links, chapters..."
               rows={5}
               style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-              data-ocid="episode.show_notes.textarea"
             />
           </div>
 
-          {/* Audio upload */}
           <div className="space-y-1.5">
             <Label className="text-wave-gray text-xs uppercase tracking-widest">
               Audio File
@@ -311,7 +302,6 @@ function EpisodeFormDialog({
                 onClick={() => audioInputRef.current?.click()}
                 disabled={audioUploadProgress !== null}
                 style={{ borderColor: "#2A2D38", background: "#0B0D12" }}
-                data-ocid="episode.audio.upload_button"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 {audioUploadProgress !== null ? "Uploading..." : "Upload Audio"}
@@ -327,7 +317,6 @@ function EpisodeFormDialog({
             )}
           </div>
 
-          {/* Artwork upload */}
           <div className="space-y-1.5">
             <Label className="text-wave-gray text-xs uppercase tracking-widest">
               Artwork Image
@@ -349,7 +338,6 @@ function EpisodeFormDialog({
                 onClick={() => artworkInputRef.current?.click()}
                 disabled={artworkUploadProgress !== null}
                 style={{ borderColor: "#2A2D38", background: "#0B0D12" }}
-                data-ocid="episode.artwork.upload_button"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 {artworkUploadProgress !== null
@@ -367,7 +355,6 @@ function EpisodeFormDialog({
             )}
           </div>
 
-          {/* Published toggle */}
           <div className="flex items-center justify-between p-4 rounded-xl border border-wave-border">
             <div>
               <p className="text-sm font-semibold text-white">Published</p>
@@ -378,7 +365,6 @@ function EpisodeFormDialog({
             <Switch
               checked={form.published}
               onCheckedChange={(v) => set("published", v)}
-              data-ocid="episode.published.switch"
             />
           </div>
         </div>
@@ -388,7 +374,6 @@ function EpisodeFormDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             style={{ borderColor: "#2A2D38" }}
-            data-ocid="episode.cancel.button"
           >
             Cancel
           </Button>
@@ -396,7 +381,6 @@ function EpisodeFormDialog({
             onClick={handleSubmit}
             disabled={isPending}
             className="gradient-btn border-0"
-            data-ocid="episode.save.button"
           >
             {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {isPending
@@ -445,7 +429,7 @@ function PodcastSettingsForm() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl" data-ocid="podcast_settings.panel">
+    <div className="space-y-6 max-w-2xl">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label className="text-wave-gray text-xs uppercase tracking-widest">
@@ -454,9 +438,7 @@ function PodcastSettingsForm() {
           <Input
             value={currentForm.stationName}
             onChange={(e) => set("stationName", e.target.value)}
-            placeholder="WAVE RADIO"
             style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-            data-ocid="podcast_settings.station_name.input"
           />
         </div>
         <div className="space-y-1.5">
@@ -466,9 +448,7 @@ function PodcastSettingsForm() {
           <Input
             value={currentForm.author}
             onChange={(e) => set("author", e.target.value)}
-            placeholder="Your name or brand"
             style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-            data-ocid="podcast_settings.author.input"
           />
         </div>
         <div className="space-y-1.5">
@@ -478,9 +458,7 @@ function PodcastSettingsForm() {
           <Input
             value={currentForm.websiteUrl}
             onChange={(e) => set("websiteUrl", e.target.value)}
-            placeholder="https://yoursite.com"
             style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-            data-ocid="podcast_settings.website.input"
           />
         </div>
         <div className="space-y-1.5">
@@ -490,9 +468,7 @@ function PodcastSettingsForm() {
           <Input
             value={currentForm.language}
             onChange={(e) => set("language", e.target.value)}
-            placeholder="en"
             style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-            data-ocid="podcast_settings.language.input"
           />
         </div>
         <div className="space-y-1.5">
@@ -502,13 +478,10 @@ function PodcastSettingsForm() {
           <Input
             value={currentForm.category}
             onChange={(e) => set("category", e.target.value)}
-            placeholder="Music"
             style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-            data-ocid="podcast_settings.category.input"
           />
         </div>
       </div>
-
       <div className="space-y-1.5">
         <Label className="text-wave-gray text-xs uppercase tracking-widest">
           Description
@@ -516,18 +489,14 @@ function PodcastSettingsForm() {
         <Textarea
           value={currentForm.description}
           onChange={(e) => set("description", e.target.value)}
-          placeholder="About your podcast..."
           rows={4}
           style={{ background: "#0B0D12", borderColor: "#2A2D38" }}
-          data-ocid="podcast_settings.description.textarea"
         />
       </div>
-
       <Button
         onClick={handleSave}
         disabled={setInfo.isPending}
         className="gradient-btn border-0"
-        data-ocid="podcast_settings.save.button"
       >
         {setInfo.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
         {setInfo.isPending ? "Saving..." : "Save Settings"}
@@ -544,8 +513,8 @@ export default function AdminPage() {
     clear: logout,
     isInitializing,
   } = useInternetIdentity();
-  const { actor, isFetching: actorFetching } = useActor();
-  const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  const { isFetching: actorFetching } = useActor();
+  const isAdmin = useIsAdmin();
   const { data: episodes, isLoading: episodesLoading } = useAllEpisodes();
   const deleteEpisode = useDeleteEpisode();
 
@@ -578,7 +547,6 @@ export default function AdminPage() {
     setEpisodeDialogOpen(true);
   };
 
-  // Only block on II initialization or actor fetch
   if (isInitializing || actorFetching) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -617,7 +585,6 @@ export default function AdminPage() {
             onClick={() => login()}
             disabled={isLoggingIn}
             className="w-full gradient-btn border-0 h-12 text-sm font-bold tracking-widest uppercase"
-            data-ocid="admin.login.button"
           >
             {isLoggingIn && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {isLoggingIn ? "Signing In..." : "Sign In with Internet Identity"}
@@ -627,34 +594,7 @@ export default function AdminPage() {
     );
   }
 
-  // Logged in but actor failed to load
-  if (!actor) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <p className="text-wave-gray text-sm">
-          Failed to connect to backend. Please refresh and try again.
-        </p>
-        <Button
-          variant="outline"
-          onClick={() => window.location.reload()}
-          style={{ borderColor: "#2A2D38" }}
-        >
-          Refresh
-        </Button>
-      </div>
-    );
-  }
-
-  // Checking admin status
-  if (isAdminLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-wave-blue" />
-      </div>
-    );
-  }
-
-  // Logged in but not admin — access denied
+  // Logged in but not admin
   if (!isAdmin) {
     return (
       <div className="grid-bg min-h-screen flex items-center justify-center px-6">
@@ -680,15 +620,13 @@ export default function AdminPage() {
               Your account does not have admin access.
             </p>
           </div>
-
-          {/* Principal display */}
           {principal && (
             <div
               className="rounded-xl p-4 text-left"
               style={{ background: "#1A1C24", border: "1px solid #2A2D38" }}
             >
               <p className="text-xs text-wave-gray uppercase tracking-widest mb-2">
-                Your Internet Identity Principal
+                Your Principal
               </p>
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-mono text-white break-all leading-relaxed">
@@ -698,13 +636,11 @@ export default function AdminPage() {
               </div>
             </div>
           )}
-
           <Button
             onClick={() => logout()}
             variant="outline"
             className="w-full h-12 text-sm font-bold tracking-widest uppercase"
             style={{ borderColor: "#2A2D38" }}
-            data-ocid="admin.signout.button"
           >
             Sign Out
           </Button>
@@ -753,7 +689,6 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Principal display in admin panel */}
           {principal && (
             <div
               className="flex items-center gap-3 px-4 py-3 rounded-xl"
@@ -769,17 +704,13 @@ export default function AdminPage() {
             </div>
           )}
 
-          <Tabs defaultValue="episodes" data-ocid="admin.tab">
+          <Tabs defaultValue="episodes">
             <TabsList
               className="mb-6"
               style={{ background: "#1A1C24", borderColor: "#2A2D38" }}
             >
-              <TabsTrigger value="episodes" data-ocid="admin.episodes.tab">
-                Episodes
-              </TabsTrigger>
-              <TabsTrigger value="settings" data-ocid="admin.settings.tab">
-                Podcast Settings
-              </TabsTrigger>
+              <TabsTrigger value="episodes">Episodes</TabsTrigger>
+              <TabsTrigger value="settings">Podcast Settings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="episodes">
@@ -792,7 +723,6 @@ export default function AdminPage() {
                   <Button
                     onClick={openCreateDialog}
                     className="gradient-btn border-0"
-                    data-ocid="admin.add_episode.button"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Episode
@@ -807,7 +737,6 @@ export default function AdminPage() {
                   <div
                     className="rounded-2xl border border-wave-border overflow-hidden"
                     style={{ background: "#1A1C24" }}
-                    data-ocid="admin.episodes.table"
                   >
                     <table className="w-full text-sm">
                       <thead>
@@ -830,11 +759,10 @@ export default function AdminPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {episodes.map((episode, index) => (
+                        {episodes.map((episode) => (
                           <tr
                             key={episode.id.toString()}
                             className="border-b border-wave-border last:border-0 hover:bg-white/5 transition-colors"
-                            data-ocid={`admin.episodes.row.${index + 1}`}
                           >
                             <td className="px-6 py-4">
                               <p className="font-semibold text-white truncate max-w-xs">
@@ -869,7 +797,6 @@ export default function AdminPage() {
                                   variant="ghost"
                                   onClick={() => openEditDialog(episode)}
                                   className="text-wave-gray hover:text-white h-8 w-8 p-0"
-                                  data-ocid={`admin.episodes.edit_button.${index + 1}`}
                                 >
                                   <Pencil className="w-3.5 h-3.5" />
                                 </Button>
@@ -878,7 +805,6 @@ export default function AdminPage() {
                                   variant="ghost"
                                   onClick={() => setDeleteConfirmId(episode.id)}
                                   className="text-wave-gray hover:text-red-400 h-8 w-8 p-0"
-                                  data-ocid={`admin.episodes.delete_button.${index + 1}`}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </Button>
@@ -893,7 +819,6 @@ export default function AdminPage() {
                   <div
                     className="text-center py-16 rounded-2xl border border-wave-border"
                     style={{ background: "#1A1C24" }}
-                    data-ocid="admin.episodes.empty_state"
                   >
                     <p className="text-wave-gray">
                       No episodes yet. Create your first one!
@@ -910,7 +835,6 @@ export default function AdminPage() {
         </motion.div>
       </div>
 
-      {/* Episode dialog */}
       <EpisodeFormDialog
         open={episodeDialogOpen}
         onOpenChange={setEpisodeDialogOpen}
@@ -932,7 +856,6 @@ export default function AdminPage() {
         onSaved={() => setEditingEpisode(null)}
       />
 
-      {/* Delete confirmation */}
       <AlertDialog
         open={deleteConfirmId !== null}
         onOpenChange={(open) => {
@@ -941,7 +864,6 @@ export default function AdminPage() {
       >
         <AlertDialogContent
           style={{ background: "#1A1C24", borderColor: "#2A2D38" }}
-          data-ocid="admin.delete.dialog"
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">
@@ -953,10 +875,7 @@ export default function AdminPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              style={{ borderColor: "#2A2D38" }}
-              data-ocid="admin.delete.cancel_button"
-            >
+            <AlertDialogCancel style={{ borderColor: "#2A2D38" }}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -964,7 +883,6 @@ export default function AdminPage() {
                 deleteConfirmId !== null && handleDeleteEpisode(deleteConfirmId)
               }
               className="gradient-btn border-0"
-              data-ocid="admin.delete.confirm_button"
             >
               Delete
             </AlertDialogAction>
