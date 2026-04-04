@@ -13,6 +13,7 @@ export interface Episode {
   audioFileId: string;
   artworkFileId: string;
   published: boolean;
+  explicit: boolean;
   createdAt: bigint;
 }
 
@@ -25,6 +26,7 @@ export interface EpisodeInput {
   audioFileId: string;
   artworkFileId: string;
   published: boolean;
+  explicit: boolean;
 }
 
 export interface PodcastInfo {

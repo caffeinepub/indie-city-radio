@@ -1,10 +1,9 @@
-import AccessControl "authorization/access-control";
 import BlobMixin "blob-storage/Mixin";
+import AccessControl "authorization/access-control";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 import Prim "mo:prim";
@@ -13,18 +12,11 @@ actor {
   // ---- Mixins ----
   include BlobMixin();
 
-  // ---- Preserved stable variables for upgrade compatibility ----
-  stable let ADMIN_PRINCIPAL : Principal = Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe");
-  let _accessControlState : AccessControl.AccessControlState = AccessControl.initState();
-
-  // ---- Admin principals (both draft and live URL variants) ----
-  let ADMIN_PRINCIPALS : [Principal] = [
-    Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe"),
-    Principal.fromText("qwq4l-mjwka-op3ra-a5i2z-pnhar-7zyoo-jovrh-czfm5-vjrb3-wp22j-tqe"),
-  ];
-
   // ---- Types ----
-  public type Episode = {
+
+  // V1 Episode: the shape stored in the live canister (no explicit field)
+  // Must be declared before stable var that absorbs the old episodes map.
+  type EpisodeV1 = {
     id : Nat;
     title : Text;
     description : Text;
@@ -37,6 +29,20 @@ actor {
     createdAt : Int;
   };
 
+  public type Episode = {
+    id : Nat;
+    title : Text;
+    description : Text;
+    showNotes : Text;
+    publishedDate : Text;
+    duration : Text;
+    audioFileId : Text;
+    artworkFileId : Text;
+    published : Bool;
+    explicit : Bool;
+    createdAt : Int;
+  };
+
   public type EpisodeInput = {
     title : Text;
     description : Text;
@@ -46,6 +52,7 @@ actor {
     audioFileId : Text;
     artworkFileId : Text;
     published : Bool;
+    explicit : Bool;
   };
 
   public type PodcastInfo = {
@@ -57,10 +64,23 @@ actor {
     category : Text;
   };
 
-  // ---- State ----
-  var nextId : Nat = 1;
-  let episodes : Map.Map<Nat, Episode> = Map.empty<Nat, Episode>();
-  var podcastInfo : PodcastInfo = {
+  // ---- Migration: absorb old stable vars from previous version ----
+  // Declaring these stable keeps the upgrade checker happy.
+  // ADMIN_PRINCIPAL was `stable let` in the old version.
+  stable let ADMIN_PRINCIPAL : Principal = Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe");
+  // _accessControlState was a non-stable `let` in the last deployed version,
+  // but may have been stable in an earlier deployed version still on-chain.
+  stable let _accessControlState : AccessControl.AccessControlState = AccessControl.initState();
+
+  // ---- Migration: absorb old episodes map (EpisodeV1, no explicit field) ----
+  // The live canister stores `episodes` as Map.Map<Nat, EpisodeV1>.
+  // Declaring it here with EpisodeV1 satisfies the type-compatibility checker.
+  // postupgrade reads from this and migrates into _episodesNew.
+  stable let episodes : Map.Map<Nat, EpisodeV1> = Map.empty<Nat, EpisodeV1>();
+
+  // ---- Persistent state (new version) ----
+  stable var nextId : Nat = 1;
+  stable var podcastInfo : PodcastInfo = {
     stationName = "Indie City Radio";
     description = "Your home for independent music, curated podcasts, and exclusive radio shows from the indie scene.";
     websiteUrl = "https://indiecityradio.com";
@@ -68,6 +88,47 @@ actor {
     language = "en-us";
     category = "Music";
   };
+
+  // The live episode map with the new Episode type (includes explicit).
+  // Not stable -- serialized via _episodesEntries in pre/postupgrade.
+  stable var _episodesEntries : [(Nat, Episode)] = [];
+  let _episodes : Map.Map<Nat, Episode> = Map.fromIter<Nat, Episode>(
+    _episodesEntries.vals(),
+  );
+
+  // ---- Upgrade hooks ----
+  system func preupgrade() {
+    _episodesEntries := _episodes.entries().toArray();
+  };
+
+  system func postupgrade() {
+    // Migrate any V1 episodes (no explicit field) from the old stable `episodes` map.
+    for ((id, ep) in episodes.entries()) {
+      if (_episodes.get(id) == null) {
+        let upgraded : Episode = {
+          id = ep.id;
+          title = ep.title;
+          description = ep.description;
+          showNotes = ep.showNotes;
+          publishedDate = ep.publishedDate;
+          duration = ep.duration;
+          audioFileId = ep.audioFileId;
+          artworkFileId = ep.artworkFileId;
+          published = ep.published;
+          explicit = false;
+          createdAt = ep.createdAt;
+        };
+        _episodes.add(id, upgraded);
+      };
+    };
+    _episodesEntries := [];
+  };
+
+  // ---- Admin principals ----
+  let ADMIN_PRINCIPALS : [Principal] = [
+    Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe"),
+    Principal.fromText("qwq4l-mjwka-op3ra-a5i2z-pnhar-7zyoo-jovrh-czfm5-vjrb3-wp22j-tqe"),
+  ];
 
   // ---- Helpers ----
   func isAdmin(caller : Principal) : Bool {
@@ -84,11 +145,11 @@ actor {
   };
 
   func episodesToArray() : [Episode] {
-    episodes.values().toArray().sort(
+    _episodes.values().toArray().sort(
       func(a : Episode, b : Episode) : { #less; #equal; #greater } {
-        if (a.createdAt > b.createdAt) { #less } else if (a.createdAt < b.createdAt) {
-          #greater;
-        } else { #equal };
+        if (a.createdAt > b.createdAt) { #less }
+        else if (a.createdAt < b.createdAt) { #greater }
+        else { #equal };
       }
     );
   };
@@ -113,15 +174,16 @@ actor {
       audioFileId = input.audioFileId;
       artworkFileId = input.artworkFileId;
       published = input.published;
+      explicit = input.explicit;
       createdAt = Time.now();
     };
-    episodes.add(id, episode);
+    _episodes.add(id, episode);
     id;
   };
 
   public shared ({ caller }) func updateEpisode(id : Nat, input : EpisodeInput) : async Bool {
     requireAdmin(caller);
-    switch (episodes.get(id)) {
+    switch (_episodes.get(id)) {
       case (null) { false };
       case (?existing) {
         let updated : Episode = {
@@ -134,9 +196,10 @@ actor {
           audioFileId = input.audioFileId;
           artworkFileId = input.artworkFileId;
           published = input.published;
+          explicit = input.explicit;
           createdAt = existing.createdAt;
         };
-        episodes.add(id, updated);
+        _episodes.add(id, updated);
         true;
       };
     };
@@ -144,17 +207,17 @@ actor {
 
   public shared ({ caller }) func deleteEpisode(id : Nat) : async Bool {
     requireAdmin(caller);
-    switch (episodes.get(id)) {
+    switch (_episodes.get(id)) {
       case (null) { false };
       case (?_) {
-        episodes.remove(id);
+        _episodes.remove(id);
         true;
       };
     };
   };
 
   public query func getEpisode(id : Nat) : async ?Episode {
-    switch (episodes.get(id)) {
+    switch (_episodes.get(id)) {
       case (null) { null };
       case (?ep) { if (ep.published) { ?ep } else { null } };
     };
@@ -191,12 +254,14 @@ actor {
       let artworkUrl = if (ep.artworkFileId == "") { "" } else {
         "https://" # selfId # ".icp0.io/" # ep.artworkFileId;
       };
+      let explicitTag = if (ep.explicit) { "yes" } else { "no" };
       items #= "<item>";
       items #= "<title>" # ep.title # "</title>";
       items #= "<description><![CDATA[" # ep.description # "]]></description>";
       items #= "<enclosure url=\"" # audioUrl # "\" type=\"audio/mpeg\" />";
       items #= "<pubDate>" # ep.publishedDate # "</pubDate>";
       items #= "<itunes:duration>" # ep.duration # "</itunes:duration>";
+      items #= "<itunes:explicit>" # explicitTag # "</itunes:explicit>";
       if (artworkUrl != "") {
         items #= "<itunes:image href=\"" # artworkUrl # "\" />";
       };

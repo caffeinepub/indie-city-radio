@@ -10,6 +10,7 @@ export const idlFactory = ({ IDL }) => {
     audioFileId: IDL.Text,
     artworkFileId: IDL.Text,
     published: IDL.Bool,
+    explicit: IDL.Bool,
     createdAt: IDL.Int,
   });
   const EpisodeInput = IDL.Record({
@@ -21,6 +22,7 @@ export const idlFactory = ({ IDL }) => {
     audioFileId: IDL.Text,
     artworkFileId: IDL.Text,
     published: IDL.Bool,
+    explicit: IDL.Bool,
   });
   const PodcastInfo = IDL.Record({
     stationName: IDL.Text,

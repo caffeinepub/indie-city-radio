@@ -63,6 +63,7 @@ interface EpisodeFormData {
   audioFileId: string;
   artworkFileId: string;
   published: boolean;
+  explicit: boolean;
 }
 
 const EMPTY_FORM: EpisodeFormData = {
@@ -74,6 +75,7 @@ const EMPTY_FORM: EpisodeFormData = {
   audioFileId: "",
   artworkFileId: "",
   published: false,
+  explicit: false,
 };
 
 function CopyButton({ text }: { text: string }) {
@@ -138,8 +140,7 @@ function EpisodeFormDialog({
     }
     try {
       setAudioUploadProgress(0);
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const { hash } = await storageClient.putFile(bytes, (p) =>
+      const { hash } = await storageClient.putFile(file, (p) =>
         setAudioUploadProgress(p),
       );
       set("audioFileId", hash);
@@ -159,8 +160,7 @@ function EpisodeFormDialog({
     }
     try {
       setArtworkUploadProgress(0);
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const { hash } = await storageClient.putFile(bytes, (p) =>
+      const { hash } = await storageClient.putFile(file, (p) =>
         setArtworkUploadProgress(p),
       );
       set("artworkFileId", hash);
@@ -187,6 +187,7 @@ function EpisodeFormDialog({
       audioFileId: form.audioFileId,
       artworkFileId: form.artworkFileId,
       published: form.published,
+      explicit: form.explicit,
     };
     try {
       if (isEditing && episodeId !== undefined) {
@@ -365,6 +366,21 @@ function EpisodeFormDialog({
             <Switch
               checked={form.published}
               onCheckedChange={(v) => set("published", v)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-xl border border-wave-border">
+            <div>
+              <p className="text-sm font-semibold text-white">
+                Explicit Content
+              </p>
+              <p className="text-xs text-wave-gray">
+                Mark if this episode contains explicit language
+              </p>
+            </div>
+            <Switch
+              checked={form.explicit}
+              onCheckedChange={(v) => set("explicit", v)}
             />
           </div>
         </div>
@@ -849,6 +865,7 @@ export default function AdminPage() {
                 audioFileId: editingEpisode.audioFileId,
                 artworkFileId: editingEpisode.artworkFileId,
                 published: editingEpisode.published,
+                explicit: editingEpisode.explicit,
               }
             : EMPTY_FORM
         }
