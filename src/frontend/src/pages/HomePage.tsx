@@ -54,9 +54,9 @@ export default function HomePage() {
               className="font-display font-black text-5xl md:text-7xl text-white uppercase leading-none mb-6"
               style={{ letterSpacing: "-0.02em" }}
             >
-              Your Sonic
+              The Best Music
               <br />
-              <span className="gradient-text">Universe</span>
+              <span className="gradient-text">You've Never Heard!</span>
             </h1>
             <p className="text-wave-gray text-lg max-w-lg mx-auto mb-10">
               Curated episodes from the cutting edge of music, culture, and
