@@ -25,7 +25,7 @@ export default function Header() {
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-8">
           {[
-            { label: "EPISODES", to: "/" },
+            { label: "EPISODES", to: "/episodes" },
             { label: "RSS FEED", to: "/rss" },
             { label: "ADMIN", to: "/admin" },
           ].map((item) => (

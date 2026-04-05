@@ -10,21 +10,40 @@ import {
 import { useEffect } from "react";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import PersistentPlayer from "./components/PersistentPlayer";
+import { PlayerProvider, usePlayer } from "./context/PlayerContext";
 import AdminPage from "./pages/AdminPage";
 import EpisodePage from "./pages/EpisodePage";
+import EpisodesPage from "./pages/EpisodesPage";
 import HomePage from "./pages/HomePage";
+import RssEpisodeDetailPage from "./pages/RssEpisodeDetailPage";
 import RssPage from "./pages/RssPage";
 
-const rootRoute = createRootRoute({
-  component: () => (
+function RootLayout() {
+  const { currentEpisode } = usePlayer();
+
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
+
+  return (
     <div className="min-h-screen flex flex-col bg-wave-dark">
       <Header />
-      <main className="flex-1">
+      <main className={`flex-1${currentEpisode ? " pb-24" : ""}`}>
         <Outlet />
       </main>
       <Footer />
+      <PersistentPlayer />
       <Toaster />
     </div>
+  );
+}
+
+const rootRoute = createRootRoute({
+  component: () => (
+    <PlayerProvider>
+      <RootLayout />
+    </PlayerProvider>
   ),
   // Catch TanStack Router's internal not-found and show home page
   notFoundComponent: () => <HomePage />,
@@ -34,6 +53,21 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: HomePage,
+});
+
+const episodesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/episodes",
+  component: EpisodesPage,
+});
+
+const episodeDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/episodes/$guid",
+  component: function RssEpisodeDetailWrapper() {
+    const { guid } = episodeDetailRoute.useParams();
+    return <RssEpisodeDetailPage guid={guid} />;
+  },
 });
 
 const episodeRoute = createRoute({
@@ -66,6 +100,8 @@ const notFoundRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
+  episodesRoute,
+  episodeDetailRoute,
   episodeRoute,
   adminRoute,
   rssRoute,
@@ -82,9 +118,5 @@ declare module "@tanstack/react-router" {
 }
 
 export default function App() {
-  useEffect(() => {
-    document.documentElement.classList.add("dark");
-  }, []);
-
   return <RouterProvider router={router} />;
 }

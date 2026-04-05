@@ -1,34 +1,40 @@
 # Indie City Radio
 
 ## Current State
-- Episode upload fails with "Failed to save episode" because `_initializeAccessControlWithSecret` is still called in `useActor.ts`, crashing the actor before `createEpisode` can run.
-- `EpisodeInput` is missing the `explicit` field in the backend type, IDL JS factory, IDL d.ts declarations, and backend-augment.d.ts.
-- The audio upload reads the entire file into a single `Uint8Array` via `file.arrayBuffer()` before chunking, which crashes or times out on 50-200MB files.
-- The RSS feed does not emit an `<itunes:explicit>` tag.
+- App has a home page with episode grid pulling from the backend canister
+- Episode detail page at `/episode/$id` uses backend data
+- Existing AudioPlayer component is inline (not persistent/global)
+- Header has nav links: EPISODES (to `/`), RSS FEED (to `/rss`), ADMIN
+- No dedicated `/episodes` page exists
+- No persistent bottom audio player
+- Backend episode storage remains for future music streaming use
 
 ## Requested Changes (Diff)
 
 ### Add
-- `explicit: Bool` field to `Episode` and `EpisodeInput` types in `main.mo`
-- `explicit: boolean` field to `EpisodeInput` and `Episode` in `backend.did.d.ts` and `backend.did.js`
-- `explicit: boolean` field to `EpisodeInput` in `backend-augment.d.ts`
-- `<itunes:explicit>` tag (yes/no) to the RSS feed per-item output in `main.mo`
-- Explicit flag toggle (checkbox/switch) in the `EpisodeFormDialog` in `AdminPage.tsx`
-- Streaming chunked reads in `StorageClient.putFile` to avoid loading entire 50-200MB file into memory at once
+- `RssEpisode` TypeScript type for RSS-parsed episode data (guid, title, description, pubDate, duration, audioUrl, artworkUrl, showNotes)
+- `useRssFeed` hook that fetches and parses XML from `https://media.rss.com/indie-city/feed.xml` using the browser's DOMParser
+- `/episodes` page: Apple Podcasts-style list layout -- each episode is a row with artwork thumbnail on the left, title/date/short description on the right, and a play button
+- `/episodes/:guid` detail page (using encoded guid as URL param): full-screen layout with large artwork, full title, full description, show notes, publish date, duration, and a play button
+- `PlayerContext` (React context + provider) that holds the currently playing episode state and audio element reference -- persists across navigation
+- `PersistentPlayer` component: fixed bottom bar that appears when an episode is playing. Shows episode thumbnail, title, progress bar (scrubable), play/pause, skip ±15s, and volume. Stays visible as user navigates between pages
+- Wire `PersistentPlayer` into the root layout in `App.tsx` (outside `<Outlet />`)
 
 ### Modify
-- `useActor.ts`: remove `_initializeAccessControlWithSecret` call permanently
-- `AdminPage.tsx`: add `explicit` field to `EpisodeFormData`, `EMPTY_FORM`, `handleSubmit`, and the edit dialog initial values
-- `main.mo`: `createEpisode` and `updateEpisode` to include `explicit` field
-- `StorageClient.ts`: `putFile` and `processFileForUpload` to use streaming chunk reads instead of full `arrayBuffer()` load
+- `Header.tsx`: Change EPISODES nav link from `to="/"` to `to="/episodes"`
+- `App.tsx`: Add `/episodes` route, `/episodes/$guid` route, wrap root with `PlayerProvider`, add `PersistentPlayer` to root layout, add padding-bottom to main content area to prevent overlap with fixed player
+- `HomePage.tsx`: Keep hero section as-is. Change "Start Listening" button to navigate to `/episodes` instead of scrolling. Remove the backend episode grid section (or replace the "Latest Podcast Episodes" section with a link/teaser pointing to `/episodes`)
 
 ### Remove
-- Nothing
+- Backend episode grid from home page (the `usePublishedEpisodes` call and grid rendering) -- replaced by RSS feed on the Episodes page
+- The `to="/"` EPISODES nav link (replaced with `to="/episodes"`)
 
 ## Implementation Plan
-1. Fix `useActor.ts` -- remove `_initializeAccessControlWithSecret` call
-2. Update `main.mo` -- add `explicit` to `Episode`, `EpisodeInput`, `createEpisode`, `updateEpisode`, and RSS output
-3. Update `backend.did.js` and `backend.did.d.ts` -- add `explicit` field to both IDL types
-4. Update `backend-augment.d.ts` -- add `explicit` to `EpisodeInput`
-5. Update `StorageClient.ts` -- fix `processFileForUpload` to chunk-read the file via `blob.slice()` without loading the whole file into memory first
-6. Update `AdminPage.tsx` -- add `explicit` field and toggle to the episode form
+1. Create `src/hooks/useRssFeed.ts` -- fetches RSS XML from the external URL via fetch(), parses with DOMParser, extracts all episode fields into `RssEpisode[]`
+2. Create `src/context/PlayerContext.tsx` -- context with `currentEpisode`, `isPlaying`, `play(episode)`, `pause()`, `audioRef` shared globally
+3. Create `src/components/PersistentPlayer.tsx` -- fixed bottom bar using PlayerContext, with progress, controls, artwork, title
+4. Create `src/pages/EpisodesPage.tsx` -- fetches RSS feed, renders Apple Podcasts-style list rows
+5. Create `src/pages/RssEpisodeDetailPage.tsx` -- full-screen episode detail using RSS data, play button triggers PlayerContext
+6. Update `App.tsx` -- add new routes, wrap with PlayerProvider, add PersistentPlayer in root layout, add pb-24 to main when player is active
+7. Update `Header.tsx` -- EPISODES link points to `/episodes`
+8. Update `HomePage.tsx` -- remove backend episode grid, update Start Listening to link to `/episodes`

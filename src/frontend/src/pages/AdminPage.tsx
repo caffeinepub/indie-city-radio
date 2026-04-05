@@ -140,7 +140,9 @@ function EpisodeFormDialog({
     }
     try {
       setAudioUploadProgress(0);
-      const { hash } = await storageClient.putFile(file, (p) =>
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const { hash } = await storageClient.putFile(bytes, (p) =>
         setAudioUploadProgress(p),
       );
       set("audioFileId", hash);
@@ -160,7 +162,9 @@ function EpisodeFormDialog({
     }
     try {
       setArtworkUploadProgress(0);
-      const { hash } = await storageClient.putFile(file, (p) =>
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const { hash } = await storageClient.putFile(bytes, (p) =>
         setArtworkUploadProgress(p),
       );
       set("artworkFileId", hash);
