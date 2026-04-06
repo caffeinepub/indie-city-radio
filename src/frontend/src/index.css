@@ -34,7 +34,8 @@
     --secondary-foreground: 0.74 0.01 262;
     --muted: 0.14 0.012 262;
     --muted-foreground: 0.74 0.01 265;
-    --accent: 0.57 0.22 18;
+    /* accent changed from red-orange (hue 18) to teal (hue 162) to match brand */
+    --accent: 0.3 0.06 162;
     --accent-foreground: 0.97 0 0;
     --destructive: 0.57 0.22 18;
     --destructive-foreground: 0.97 0 0;
@@ -112,4 +113,57 @@
   .neon-red-glow {
     box-shadow: 0 0 20px rgba(255, 59, 92, 0.3);
   }
+}
+
+/* RSS show notes HTML rendering */
+.prose-rss p {
+  margin-bottom: 1em;
+}
+.prose-rss p:last-child {
+  margin-bottom: 0;
+}
+.prose-rss br {
+  display: block;
+  content: "";
+  margin-bottom: 0.5em;
+}
+.prose-rss a {
+  color: #47bc96;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-rss a:hover {
+  color: #fff;
+}
+.prose-rss ul,
+.prose-rss ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+.prose-rss ul {
+  list-style-type: disc;
+}
+.prose-rss ol {
+  list-style-type: decimal;
+}
+.prose-rss li {
+  margin-bottom: 0.25em;
+}
+.prose-rss strong,
+.prose-rss b {
+  color: #fff;
+  font-weight: 600;
+}
+.prose-rss em,
+.prose-rss i {
+  font-style: italic;
+}
+.prose-rss h1,
+.prose-rss h2,
+.prose-rss h3,
+.prose-rss h4 {
+  color: #fff;
+  font-weight: 700;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
 }

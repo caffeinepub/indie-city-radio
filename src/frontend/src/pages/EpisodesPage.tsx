@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Play, Radio } from "lucide-react";
 import { motion } from "motion/react";
 import { usePlayer } from "../context/PlayerContext";
-import { useRssFeed } from "../hooks/useRssFeed";
+import { formatDuration, useRssFeed } from "../hooks/useRssFeed";
 import type { RssEpisode } from "../hooks/useRssFeed";
 
 function formatPubDate(dateStr: string): string {
@@ -17,6 +17,22 @@ function formatPubDate(dateStr: string): string {
   } catch {
     return dateStr;
   }
+}
+
+/** Strip HTML and return plain text */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/p>/gi, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function EpisodeRow({
@@ -42,6 +58,10 @@ function EpisodeRow({
       params: { guid: encodeURIComponent(episode.guid) },
     });
   };
+
+  // Plain text description for the 2-line preview
+  const plainDescription = stripHtml(episode.description);
+  const formattedDuration = formatDuration(episode.duration);
 
   return (
     <motion.div
@@ -101,17 +121,18 @@ function EpisodeRow({
               </h3>
               <p className="text-xs text-wave-gray/70 mt-1">
                 {formatPubDate(episode.pubDate)}
-                {episode.duration && (
+                {formattedDuration && (
                   <span className="ml-3 text-wave-gray/50">
-                    {episode.duration}
+                    {formattedDuration}
                   </span>
                 )}
               </p>
-              <p className="text-sm text-wave-gray/80 mt-2 line-clamp-2 leading-relaxed">
-                {episode.description.replace(/<[^>]*>/g, "").slice(0, 150)}
-                {episode.description.replace(/<[^>]*>/g, "").length > 150 &&
-                  "..."}
-              </p>
+              {/* 2-line description preview — full notes are on the detail page */}
+              {plainDescription && (
+                <p className="text-sm text-wave-gray/80 mt-1.5 line-clamp-2 leading-snug">
+                  {plainDescription}
+                </p>
+              )}
             </div>
 
             {/* Play button */}

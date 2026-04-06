@@ -2,17 +2,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
+  BookOpen,
   Calendar,
   ChevronLeft,
   ChevronRight,
   Clock,
+  ExternalLink,
   Pause,
   Play,
   Radio,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { usePlayer } from "../context/PlayerContext";
-import { useRssFeed } from "../hooks/useRssFeed";
+import {
+  formatChapterTime,
+  formatDuration,
+  useRssFeed,
+} from "../hooks/useRssFeed";
+import type { RssChapter } from "../hooks/useRssFeed";
 
 interface RssEpisodeDetailPageProps {
   guid: string;
@@ -47,11 +54,104 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+/**
+ * Sanitize HTML from the RSS feed for safe rendering.
+ * Allows common formatting tags; strips scripts and event handlers.
+ */
+function sanitizeHtml(html: string): string {
+  return (
+    html
+      // Remove script and style blocks entirely
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      // Strip event handler attributes (onclick, onload, etc.)
+      .replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "")
+      // Strip javascript: hrefs
+      .replace(/href\s*=\s*"javascript:[^"]*"/gi, 'href="#"')
+      .replace(/href\s*=\s*'javascript:[^']*'/gi, "href='#'")
+      // Open external links in new tab safely
+      .replace(/<a\s/gi, '<a target="_blank" rel="noopener noreferrer" ')
+  );
+}
+
+function ChapterList({
+  chapters,
+  onSeek,
+}: {
+  chapters: RssChapter[];
+  onSeek?: (seconds: number) => void;
+}) {
+  return (
+    <section
+      className="rounded-2xl border border-wave-border p-6"
+      style={{ background: "#1A1C24" }}
+    >
+      <h2 className="font-display font-bold text-white text-xl mb-4 flex items-center gap-2">
+        <BookOpen className="w-5 h-5 text-wave-blue" />
+        Chapters
+      </h2>
+      <ol className="space-y-1">
+        {chapters.map((chapter, i) => (
+          <li key={`${chapter.startTime}-${i}`}>
+            <button
+              type="button"
+              onClick={() => onSeek?.(chapter.startTime)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-wave-border/50 transition-colors text-left group"
+            >
+              {/* Timestamp badge */}
+              <span
+                className="flex-shrink-0 text-xs font-mono font-semibold px-2 py-0.5 rounded-md"
+                style={{
+                  background: "rgba(71,188,150,0.12)",
+                  color: "#47bc96",
+                  minWidth: "3.5rem",
+                  textAlign: "center",
+                }}
+              >
+                {formatChapterTime(chapter.startTime)}
+              </span>
+
+              {/* Chapter artwork (if any) */}
+              {chapter.imageUrl && (
+                <img
+                  src={chapter.imageUrl}
+                  alt=""
+                  className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                />
+              )}
+
+              {/* Title */}
+              <span className="flex-1 text-sm text-wave-gray group-hover:text-white transition-colors leading-tight">
+                {chapter.title || `Chapter ${i + 1}`}
+              </span>
+
+              {/* External link */}
+              {chapter.url && (
+                <a
+                  href={chapter.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex-shrink-0 text-wave-gray/40 hover:text-wave-blue transition-colors"
+                  aria-label="Open chapter link"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 export default function RssEpisodeDetailPage({
   guid,
 }: RssEpisodeDetailPageProps) {
   const { episodes, isLoading } = useRssFeed();
-  const { playEpisode, pauseEpisode, currentEpisode, isPlaying } = usePlayer();
+  const { playEpisode, pauseEpisode, seekTo, currentEpisode, isPlaying } =
+    usePlayer();
 
   const decodedGuid = decodeURIComponent(guid);
   const episodeIndex = episodes.findIndex((e) => e.guid === decodedGuid);
@@ -70,6 +170,17 @@ export default function RssEpisodeDetailPage({
       pauseEpisode();
     } else {
       playEpisode(episode);
+    }
+  };
+
+  const handleChapterSeek = (seconds: number) => {
+    if (!episode) return;
+    if (!isCurrentEpisode) {
+      playEpisode(episode);
+      // Small delay to let the player mount before seeking
+      setTimeout(() => seekTo?.(seconds), 600);
+    } else {
+      seekTo?.(seconds);
     }
   };
 
@@ -110,7 +221,20 @@ export default function RssEpisodeDetailPage({
     );
   }
 
-  const showNotesText = episode.showNotes ? stripHtml(episode.showNotes) : "";
+  const hasChapters = episode.chapters.length > 0;
+  const formattedDuration = formatDuration(episode.duration);
+
+  // Prefer rich HTML show notes; fall back to plain description
+  const showNotesHtml = episode.showNotes
+    ? sanitizeHtml(episode.showNotes)
+    : episode.description
+      ? sanitizeHtml(episode.description)
+      : null;
+
+  // Plain text description for the short blurb in the header
+  const shortDescription = episode.description
+    ? stripHtml(episode.description)
+    : "";
 
   return (
     <div className="grid-bg min-h-screen">
@@ -179,17 +303,17 @@ export default function RssEpisodeDetailPage({
                     {formatPubDate(episode.pubDate)}
                   </span>
                 )}
-                {episode.duration && (
+                {formattedDuration && (
                   <span className="flex items-center gap-1.5 text-sm text-wave-gray">
                     <Clock className="w-4 h-4" />
-                    {episode.duration}
+                    {formattedDuration}
                   </span>
                 )}
               </div>
 
-              {episode.description && (
+              {shortDescription && (
                 <p className="text-wave-gray leading-relaxed">
-                  {stripHtml(episode.description)}
+                  {shortDescription}
                 </p>
               )}
 
@@ -240,20 +364,16 @@ export default function RssEpisodeDetailPage({
             </div>
           </div>
 
-          {/* Show notes */}
-          {showNotesText ? (
-            <section
-              className="rounded-2xl border border-wave-border p-6"
-              style={{ background: "#1A1C24" }}
-            >
-              <h2 className="font-display font-bold text-white text-xl mb-4">
-                Show Notes
-              </h2>
-              <p className="text-wave-gray leading-relaxed whitespace-pre-wrap">
-                {showNotesText}
-              </p>
-            </section>
-          ) : episode.description ? (
+          {/* Chapters */}
+          {hasChapters && (
+            <ChapterList
+              chapters={episode.chapters}
+              onSeek={handleChapterSeek}
+            />
+          )}
+
+          {/* Show notes / About */}
+          {showNotesHtml && (
             <section
               className="rounded-2xl border border-wave-border p-6"
               style={{ background: "#1A1C24" }}
@@ -261,11 +381,14 @@ export default function RssEpisodeDetailPage({
               <h2 className="font-display font-bold text-white text-xl mb-4">
                 About This Episode
               </h2>
-              <p className="text-wave-gray leading-relaxed">
-                {stripHtml(episode.description)}
-              </p>
+              {/* Render HTML from RSS feed, preserving paragraphs and formatting */}
+              <div
+                className="text-wave-gray leading-relaxed prose-rss"
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: RSS feed show notes are sanitized before rendering
+                dangerouslySetInnerHTML={{ __html: showNotesHtml }}
+              />
             </section>
-          ) : null}
+          )}
 
           {/* Prev / Next navigation */}
           <div className="grid grid-cols-2 gap-4">
