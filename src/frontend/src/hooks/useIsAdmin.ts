@@ -1,4 +1,4 @@
-import { useInternetIdentity } from "./useInternetIdentity";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 
 // Admin principals hardcoded in frontend — no backend call needed.
 // To add more admins, add their principal string to this array.

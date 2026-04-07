@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Calendar, Clock, Play } from "lucide-react";
 import { motion } from "motion/react";
-import type { Episode } from "../declarations/backend.did";
+import type { Episode } from "../hooks/useQueries";
 
 interface EpisodeCardProps {
   episode: Episode;

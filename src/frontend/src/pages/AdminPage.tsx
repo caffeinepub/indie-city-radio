@@ -23,6 +23,7 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import {
   Check,
   Copy,
@@ -36,14 +37,9 @@ import {
 import { motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import type {
-  Episode,
-  EpisodeInput,
-  PodcastInfo,
-} from "../declarations/backend.did";
 import { useActor } from "../hooks/useActor";
-import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { useIsAdmin } from "../hooks/useIsAdmin";
+import type { Episode, EpisodeInput, PodcastInfo } from "../hooks/useQueries";
 import {
   useAllEpisodes,
   useCreateEpisode,

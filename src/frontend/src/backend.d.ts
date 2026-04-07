@@ -7,56 +7,47 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-
-export interface Episode {
-  id: bigint;
-  title: string;
-  description: string;
-  showNotes: string;
-  publishedDate: string;
-  duration: string;
-  audioFileId: string;
-  artworkFileId: string;
-  published: boolean;
-  createdAt: bigint;
-}
-
-export interface EpisodeInput {
-  title: string;
-  description: string;
-  showNotes: string;
-  publishedDate: string;
-  duration: string;
-  audioFileId: string;
-  artworkFileId: string;
-  published: boolean;
-}
-
 export interface PodcastInfo {
-  stationName: string;
-  description: string;
-  websiteUrl: string;
-  author: string;
-  language: string;
-  category: string;
+    websiteUrl: string;
+    description: string;
+    author: string;
+    language: string;
+    category: string;
+    stationName: string;
 }
-
+export interface EpisodeInput {
+    title: string;
+    duration: string;
+    publishedDate: string;
+    published: boolean;
+    explicit: boolean;
+    audioFileId: string;
+    description: string;
+    artworkFileId: string;
+    showNotes: string;
+}
+export interface Episode {
+    id: bigint;
+    title: string;
+    duration: string;
+    publishedDate: string;
+    published: boolean;
+    createdAt: bigint;
+    explicit: boolean;
+    audioFileId: string;
+    description: string;
+    artworkFileId: string;
+    showNotes: string;
+}
 export interface backendInterface {
-  // Admin
-  isCallerAdmin(): Promise<boolean>;
-
-  // Episodes
-  createEpisode(input: EpisodeInput): Promise<bigint>;
-  updateEpisode(id: bigint, input: EpisodeInput): Promise<boolean>;
-  deleteEpisode(id: bigint): Promise<boolean>;
-  getEpisode(id: bigint): Promise<[] | [Episode]>;
-  getEpisodes(): Promise<Episode[]>;
-  getAllEpisodes(): Promise<Episode[]>;
-
-  // Podcast info
-  setPodcastInfo(info: PodcastInfo): Promise<void>;
-  getPodcastInfo(): Promise<PodcastInfo>;
-
-  // RSS
-  getRssFeed(): Promise<string>;
+    createEpisode(input: EpisodeInput): Promise<bigint>;
+    deleteEpisode(id: bigint): Promise<boolean>;
+    getAllEpisodes(): Promise<Array<Episode>>;
+    getEpisode(id: bigint): Promise<Episode | null>;
+    getEpisodes(): Promise<Array<Episode>>;
+    getPodcastInfo(): Promise<PodcastInfo>;
+    getRssFeed(): Promise<string>;
+    isCallerAdmin(): Promise<boolean>;
+    setPodcastInfo(info: PodcastInfo): Promise<void>;
+    updateEpisode(id: bigint, input: EpisodeInput): Promise<boolean>;
 }

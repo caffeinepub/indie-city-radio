@@ -11,7 +11,7 @@ import {
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import AudioPlayer from "../components/AudioPlayer";
-import type { Episode } from "../declarations/backend.did";
+import type { Episode } from "../hooks/useQueries";
 import { useEpisode, usePublishedEpisodes } from "../hooks/useQueries";
 import { useStorageClient } from "../hooks/useStorageClient";
 
@@ -34,7 +34,7 @@ export default function EpisodePage({ id }: EpisodePageProps) {
 
   const sortedEpisodes: Episode[] = (allEpisodes ?? [])
     .slice()
-    .sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+    .sort((a, b) => Number(a.id) - Number(b.id));
 
   const currentIndex = sortedEpisodes.findIndex((e) => e.id.toString() === id);
   const prevEpisode =

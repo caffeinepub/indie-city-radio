@@ -1,54 +1,43 @@
+import {
+  loadConfig,
+  useInternetIdentity,
+} from "@caffeineai/core-infrastructure";
+import { HttpAgent } from "@icp-sdk/core/agent";
+import { Actor } from "@icp-sdk/core/agent";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import type { backendInterface } from "../backend";
-import { createActorWithConfig } from "../config";
-import { useInternetIdentity } from "./useInternetIdentity";
+import { idlFactory } from "../declarations/backend.did";
 
-const ACTOR_QUERY_KEY = "actor";
 export function useActor() {
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
-  const actorQuery = useQuery<backendInterface>({
-    queryKey: [ACTOR_QUERY_KEY, identity?.getPrincipal().toString()],
+
+  const actorQuery = useQuery({
+    queryKey: ["actor", identity?.getPrincipal().toString() ?? "anon"],
     queryFn: async () => {
-      const isAuthenticated = !!identity;
-
-      if (!isAuthenticated) {
-        // Return anonymous actor if not authenticated
-        return await createActorWithConfig();
+      const config = await loadConfig();
+      const agent = HttpAgent.createSync({
+        host: config.backend_host,
+        identity: identity ?? undefined,
+      });
+      if (config.backend_host?.includes("localhost")) {
+        await agent.fetchRootKey();
       }
-
-      const actorOptions = {
-        agentOptions: {
-          identity,
-        },
-      };
-
-      return await createActorWithConfig(actorOptions);
+      return Actor.createActor(idlFactory, {
+        agent,
+        canisterId: config.backend_canister_id,
+      });
     },
-    // Only refetch when identity changes
     staleTime: Number.POSITIVE_INFINITY,
-    enabled: true,
   });
 
-  // When the actor changes, invalidate dependent queries
   useEffect(() => {
     if (actorQuery.data) {
       queryClient.invalidateQueries({
-        predicate: (query) => {
-          return !query.queryKey.includes(ACTOR_QUERY_KEY);
-        },
-      });
-      queryClient.refetchQueries({
-        predicate: (query) => {
-          return !query.queryKey.includes(ACTOR_QUERY_KEY);
-        },
+        predicate: (q) => !q.queryKey.includes("actor"),
       });
     }
   }, [actorQuery.data, queryClient]);
 
-  return {
-    actor: actorQuery.data || null,
-    isFetching: actorQuery.isFetching,
-  };
+  return { actor: actorQuery.data ?? null, isFetching: actorQuery.isFetching };
 }

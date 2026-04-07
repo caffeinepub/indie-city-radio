@@ -1,12 +1,40 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type {
-  Episode,
-  EpisodeInput,
-  PodcastInfo,
-} from "../declarations/backend.did";
 import { useActor } from "./useActor";
 
-export type { Episode, EpisodeInput, PodcastInfo };
+// Local type definitions for backend episode/podcast data model
+export interface Episode {
+  id: bigint;
+  title: string;
+  description: string;
+  showNotes: string;
+  publishedDate: string;
+  duration: string;
+  audioFileId: string;
+  artworkFileId: string;
+  published: boolean;
+  explicit: boolean;
+}
+
+export interface EpisodeInput {
+  title: string;
+  description: string;
+  showNotes: string;
+  publishedDate: string;
+  duration: string;
+  audioFileId: string;
+  artworkFileId: string;
+  published: boolean;
+  explicit: boolean;
+}
+
+export interface PodcastInfo {
+  stationName: string;
+  description: string;
+  websiteUrl: string;
+  author: string;
+  language: string;
+  category: string;
+}
 
 export function usePublishedEpisodes() {
   const { actor, isFetching } = useActor();
@@ -14,7 +42,9 @@ export function usePublishedEpisodes() {
     queryKey: ["episodes"],
     queryFn: async (): Promise<Episode[]> => {
       if (!actor) return [];
-      return actor.getEpisodes();
+      return (
+        actor as unknown as { getEpisodes(): Promise<Episode[]> }
+      ).getEpisodes();
     },
     enabled: !!actor && !isFetching,
   });
@@ -26,7 +56,9 @@ export function useAllEpisodes() {
     queryKey: ["allEpisodes"],
     queryFn: async (): Promise<Episode[]> => {
       if (!actor) return [];
-      return actor.getAllEpisodes();
+      return (
+        actor as unknown as { getAllEpisodes(): Promise<Episode[]> }
+      ).getAllEpisodes();
     },
     enabled: !!actor && !isFetching,
   });
@@ -38,7 +70,9 @@ export function useEpisode(id: bigint) {
     queryKey: ["episode", id.toString()],
     queryFn: async (): Promise<Episode | null> => {
       if (!actor) return null;
-      const result = await actor.getEpisode(id);
+      const result = await (
+        actor as unknown as { getEpisode(id: bigint): Promise<[] | [Episode]> }
+      ).getEpisode(id);
       if (result.length > 0) return result[0] as Episode;
       return null;
     },
@@ -60,35 +94,23 @@ export function usePodcastInfo() {
           language: "en",
           category: "",
         };
-      return actor.getPodcastInfo();
+      return (
+        actor as unknown as { getPodcastInfo(): Promise<PodcastInfo> }
+      ).getPodcastInfo();
     },
     enabled: !!actor && !isFetching,
   });
 }
 
-export function useRssFeed() {
+export function useRssFeedQuery() {
   const { actor, isFetching } = useActor();
   return useQuery<string>({
     queryKey: ["rssFeed"],
     queryFn: async (): Promise<string> => {
       if (!actor) return "";
-      return actor.getRssFeed();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useIsAdmin() {
-  const { actor, isFetching } = useActor();
-  return useQuery<boolean>({
-    queryKey: ["isAdmin"],
-    queryFn: async (): Promise<boolean> => {
-      if (!actor) return false;
-      try {
-        return await actor.isCallerAdmin();
-      } catch {
-        return false;
-      }
+      return (
+        actor as unknown as { getRssFeed(): Promise<string> }
+      ).getRssFeed();
     },
     enabled: !!actor && !isFetching,
   });
@@ -100,7 +122,11 @@ export function useCreateEpisode() {
   return useMutation({
     mutationFn: async (input: EpisodeInput): Promise<bigint> => {
       if (!actor) throw new Error("Not connected");
-      return actor.createEpisode(input);
+      return (
+        actor as unknown as {
+          createEpisode(input: EpisodeInput): Promise<bigint>;
+        }
+      ).createEpisode(input);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["episodes"] });
@@ -121,7 +147,11 @@ export function useUpdateEpisode() {
       input: EpisodeInput;
     }): Promise<boolean> => {
       if (!actor) throw new Error("Not connected");
-      return actor.updateEpisode(id, input);
+      return (
+        actor as unknown as {
+          updateEpisode(id: bigint, input: EpisodeInput): Promise<boolean>;
+        }
+      ).updateEpisode(id, input);
     },
     onSuccess: (
       _data: boolean,
@@ -140,7 +170,9 @@ export function useDeleteEpisode() {
   return useMutation({
     mutationFn: async (id: bigint): Promise<boolean> => {
       if (!actor) throw new Error("Not connected");
-      return actor.deleteEpisode(id);
+      return (
+        actor as unknown as { deleteEpisode(id: bigint): Promise<boolean> }
+      ).deleteEpisode(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["episodes"] });
@@ -155,7 +187,9 @@ export function useSetPodcastInfo() {
   return useMutation({
     mutationFn: async (info: PodcastInfo): Promise<void> => {
       if (!actor) throw new Error("Not connected");
-      return actor.setPodcastInfo(info);
+      return (
+        actor as unknown as { setPodcastInfo(info: PodcastInfo): Promise<void> }
+      ).setPodcastInfo(info);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["podcastInfo"] });

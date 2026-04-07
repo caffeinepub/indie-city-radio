@@ -1,0 +1,72 @@
+// Version: 1.0.0
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type EpisodeV1__489563894 =
+  {
+    artworkFileId : Text;
+    audioFileId : Text;
+    createdAt : Int;
+    description : Text;
+    duration : Text;
+    id : Nat;
+    published : Bool;
+    publishedDate : Text;
+    showNotes : Text;
+    title : Text
+  };
+type Episode__362271522 =
+  {
+    artworkFileId : Text;
+    audioFileId : Text;
+    createdAt : Int;
+    description : Text;
+    duration : Text;
+    explicit : Bool;
+    id : Nat;
+    published : Bool;
+    publishedDate : Text;
+    showNotes : Text;
+    title : Text
+  };
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type UserRole__599675725 = {#admin; #guest; #user};
+actor {
+  stable ADMIN_PRINCIPAL : Principal;
+  stable ADMIN_PRINCIPALS : [Principal];
+  stable _accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__599675725>
+    };
+  stable _episodes :
+    {
+      var root : Node__46230540<Nat, Episode__362271522>;
+      var size : Nat__490723111
+    };
+  stable var _episodesEntries : [(Nat, Episode__362271522)];
+  stable episodes :
+    {
+      var root : Node__46230540<Nat, EpisodeV1__489563894>;
+      var size : Nat__490723111
+    };
+  stable var nextId : Nat;
+  stable var podcastInfo :
+    {
+      author : Text;
+      category : Text;
+      description : Text;
+      language : Text;
+      stationName : Text;
+      websiteUrl : Text
+    }
+};

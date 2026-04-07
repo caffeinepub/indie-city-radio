@@ -89,10 +89,196 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface backendInterface {
+export interface PodcastInfo {
+    websiteUrl: string;
+    description: string;
+    author: string;
+    language: string;
+    category: string;
+    stationName: string;
 }
+export interface EpisodeInput {
+    title: string;
+    duration: string;
+    publishedDate: string;
+    published: boolean;
+    explicit: boolean;
+    audioFileId: string;
+    description: string;
+    artworkFileId: string;
+    showNotes: string;
+}
+export interface Episode {
+    id: bigint;
+    title: string;
+    duration: string;
+    publishedDate: string;
+    published: boolean;
+    createdAt: bigint;
+    explicit: boolean;
+    audioFileId: string;
+    description: string;
+    artworkFileId: string;
+    showNotes: string;
+}
+export interface backendInterface {
+    createEpisode(input: EpisodeInput): Promise<bigint>;
+    deleteEpisode(id: bigint): Promise<boolean>;
+    getAllEpisodes(): Promise<Array<Episode>>;
+    getEpisode(id: bigint): Promise<Episode | null>;
+    getEpisodes(): Promise<Array<Episode>>;
+    getPodcastInfo(): Promise<PodcastInfo>;
+    getRssFeed(): Promise<string>;
+    isCallerAdmin(): Promise<boolean>;
+    setPodcastInfo(info: PodcastInfo): Promise<void>;
+    updateEpisode(id: bigint, input: EpisodeInput): Promise<boolean>;
+}
+import type { Episode as _Episode } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async createEpisode(arg0: EpisodeInput): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createEpisode(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createEpisode(arg0);
+            return result;
+        }
+    }
+    async deleteEpisode(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteEpisode(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteEpisode(arg0);
+            return result;
+        }
+    }
+    async getAllEpisodes(): Promise<Array<Episode>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllEpisodes();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllEpisodes();
+            return result;
+        }
+    }
+    async getEpisode(arg0: bigint): Promise<Episode | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getEpisode(arg0);
+                return from_candid_opt_n1(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getEpisode(arg0);
+            return from_candid_opt_n1(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getEpisodes(): Promise<Array<Episode>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getEpisodes();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getEpisodes();
+            return result;
+        }
+    }
+    async getPodcastInfo(): Promise<PodcastInfo> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getPodcastInfo();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getPodcastInfo();
+            return result;
+        }
+    }
+    async getRssFeed(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getRssFeed();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getRssFeed();
+            return result;
+        }
+    }
+    async isCallerAdmin(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isCallerAdmin();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isCallerAdmin();
+            return result;
+        }
+    }
+    async setPodcastInfo(arg0: PodcastInfo): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setPodcastInfo(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setPodcastInfo(arg0);
+            return result;
+        }
+    }
+    async updateEpisode(arg0: bigint, arg1: EpisodeInput): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateEpisode(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateEpisode(arg0, arg1);
+            return result;
+        }
+    }
+}
+function from_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Episode]): Episode | null {
+    return value.length === 0 ? null : value[0];
 }
 export interface CreateActorOptions {
     agent?: Agent;

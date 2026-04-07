@@ -1,5 +1,3 @@
-import BlobMixin "blob-storage/Mixin";
-import AccessControl "authorization/access-control";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Text "mo:core/Text";
@@ -9,8 +7,6 @@ import Principal "mo:core/Principal";
 import Prim "mo:prim";
 
 actor {
-  // ---- Mixins ----
-  include BlobMixin();
 
   // ---- Types ----
 
@@ -65,12 +61,14 @@ actor {
   };
 
   // ---- Migration: absorb old stable vars from previous version ----
-  // Declaring these stable keeps the upgrade checker happy.
   // ADMIN_PRINCIPAL was `stable let` in the old version.
   stable let ADMIN_PRINCIPAL : Principal = Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe");
-  // _accessControlState was a non-stable `let` in the last deployed version,
-  // but may have been stable in an earlier deployed version still on-chain.
-  stable let _accessControlState : AccessControl.AccessControlState = AccessControl.initState();
+  // _accessControlState was stable in the old version — keep the shape to allow upgrade.
+  type UserRole = { #admin; #user; #guest };
+  stable let _accessControlState : { var adminAssigned : Bool; userRoles : Map.Map<Principal, UserRole> } = {
+    var adminAssigned = true;
+    userRoles = Map.empty<Principal, UserRole>();
+  };
 
   // ---- Migration: absorb old episodes map (EpisodeV1, no explicit field) ----
   // The live canister stores `episodes` as Map.Map<Nat, EpisodeV1>.
@@ -125,7 +123,7 @@ actor {
   };
 
   // ---- Admin principals ----
-  let ADMIN_PRINCIPALS : [Principal] = [
+  stable let ADMIN_PRINCIPALS : [Principal] = [
     Principal.fromText("x3m76-4lxyy-c7idq-woytx-gna5i-5lgxx-log7y-nimmx-d7m6w-slhnq-gqe"),
     Principal.fromText("qwq4l-mjwka-op3ra-a5i2z-pnhar-7zyoo-jovrh-czfm5-vjrb3-wp22j-tqe"),
   ];

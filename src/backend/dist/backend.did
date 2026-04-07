@@ -1,0 +1,47 @@
+type PodcastInfo = 
+ record {
+   author: text;
+   category: text;
+   description: text;
+   language: text;
+   stationName: text;
+   websiteUrl: text;
+ };
+type EpisodeInput = 
+ record {
+   artworkFileId: text;
+   audioFileId: text;
+   description: text;
+   duration: text;
+   explicit: bool;
+   published: bool;
+   publishedDate: text;
+   showNotes: text;
+   title: text;
+ };
+type Episode = 
+ record {
+   artworkFileId: text;
+   audioFileId: text;
+   createdAt: int;
+   description: text;
+   duration: text;
+   explicit: bool;
+   id: nat;
+   published: bool;
+   publishedDate: text;
+   showNotes: text;
+   title: text;
+ };
+service : {
+  createEpisode: (input: EpisodeInput) -> (nat);
+  deleteEpisode: (id: nat) -> (bool);
+  getAllEpisodes: () -> (vec Episode) query;
+  getEpisode: (id: nat) -> (opt Episode) query;
+  getEpisodes: () -> (vec Episode) query;
+  getPodcastInfo: () -> (PodcastInfo) query;
+  getRssFeed: () -> (text);
+  isCallerAdmin: () -> (bool) query;
+  setPodcastInfo: (info: PodcastInfo) -> ();
+  updateEpisode: (id: nat, input: EpisodeInput) -> (bool);
+}

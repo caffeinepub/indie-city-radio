@@ -4,11 +4,11 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { SiApplepodcasts, SiSpotify } from "react-icons/si";
 import { toast } from "sonner";
-import { usePodcastInfo, useRssFeed } from "../hooks/useQueries";
+import { usePodcastInfo, useRssFeedQuery } from "../hooks/useQueries";
 
 export default function RssPage() {
   const [copied, setCopied] = useState(false);
-  const { data: rssFeed, isLoading: feedLoading } = useRssFeed();
+  const { data: rssFeed, isLoading: feedLoading } = useRssFeedQuery();
   const { data: podcastInfo } = usePodcastInfo();
 
   const feedUrl = `${window.location.origin}${window.location.pathname}#/rss-feed`;
