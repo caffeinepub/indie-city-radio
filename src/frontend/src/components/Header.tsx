@@ -1,7 +1,16 @@
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Link } from "@tanstack/react-router";
 import { Radio } from "lucide-react";
 
 export default function Header() {
+  const isAdmin = useIsAdmin();
+
+  const navLinks = [
+    { label: "EPISODES", to: "/episodes" },
+    { label: "RSS FEED", to: "/rss" },
+    ...(isAdmin ? [{ label: "ADMIN", to: "/admin" }] : []),
+  ];
+
   return (
     <header
       className="sticky top-0 z-50 w-full border-b border-wave-border"
@@ -24,11 +33,7 @@ export default function Header() {
 
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-8">
-          {[
-            { label: "EPISODES", to: "/episodes" },
-            { label: "RSS FEED", to: "/rss" },
-            { label: "ADMIN", to: "/admin" },
-          ].map((item) => (
+          {navLinks.map((item) => (
             <Link
               key={item.to}
               to={item.to}
