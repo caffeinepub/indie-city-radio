@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, Music2, Radio } from "lucide-react";
+import { Heart, Radio } from "lucide-react";
 import { SiApplepodcasts, SiSpotify } from "react-icons/si";
 
 export default function Footer() {
@@ -63,44 +63,49 @@ export default function Footer() {
                 href="https://rss.com/podcasts/indie-city/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-wave-gray hover:text-[#47bc96] transition-colors"
                 aria-label="RSS Feed"
+                className="transition-transform duration-200 ease-in-out hover:scale-110 inline-flex"
               >
                 <img
-                  src="/assets/rss-gray-500-019d69c7-3807-7585-820a-38a0a53e37e8.png"
+                  src="/assets/rss-512-019d69ed-80bf-72ef-9298-7f756155c409.png"
                   alt="RSS"
-                  width={22}
-                  height={22}
-                  className="opacity-60 hover:opacity-100 transition-opacity"
-                  style={{ display: "inline-block" }}
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 object-contain"
                 />
               </a>
               <a
                 href="https://open.spotify.com/show/0piAWFQ72tvDyJSztrUL5F?si=67e79c0cd9794e27"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-wave-gray hover:text-green-400 transition-colors"
+                className="text-wave-gray hover:text-[#1DB954] transition-colors duration-200 transition-transform hover:scale-110 inline-flex"
                 aria-label="Spotify"
               >
-                <SiSpotify size={22} />
+                <SiSpotify size={32} />
               </a>
               <a
                 href="https://podcasts.apple.com/us/podcast/indie-city-radio/id1890787320"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-wave-gray hover:text-[#B150E2] transition-colors"
+                className="text-wave-gray hover:text-[#B150E2] transition-colors duration-200 transition-transform hover:scale-110 inline-flex"
                 aria-label="Apple Podcasts"
               >
-                <SiApplepodcasts size={22} />
+                <SiApplepodcasts size={32} />
               </a>
               <a
                 href="https://music.amazon.com/podcasts/3c304fe9-e4e3-4079-8d7e-bc831ddf3937/indie-city-radio"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-wave-gray hover:text-[#FF9900] transition-colors"
                 aria-label="Amazon Music"
+                className="transition-transform duration-200 ease-in-out hover:scale-110 inline-flex"
               >
-                <Music2 size={22} />
+                <img
+                  src="/assets/amazon-music2-019d69ed-811a-764d-8de3-95cd13f26c11.png"
+                  alt="Amazon Music"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 object-contain"
+                />
               </a>
             </div>
           </div>
