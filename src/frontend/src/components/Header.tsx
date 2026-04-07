@@ -1,9 +1,12 @@
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { Link } from "@tanstack/react-router";
-import { Radio } from "lucide-react";
+import { LogIn, Radio } from "lucide-react";
 
 export default function Header() {
   const isAdmin = useIsAdmin();
+  const { identity, login } = useInternetIdentity();
+  const isLoggedIn = !!identity;
 
   const navLinks = [
     { label: "EPISODES", to: "/episodes" },
@@ -43,11 +46,37 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+
+          {/* Login button — only shown when not logged in and not admin */}
+          {!isLoggedIn && (
+            <button
+              type="button"
+              onClick={() => login()}
+              className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-wave-gray hover:text-white transition-colors duration-200"
+              data-ocid="nav.login.button"
+              aria-label="Sign in with Internet Identity"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              LOGIN
+            </button>
+          )}
         </nav>
 
-        {/* Mobile menu placeholder */}
+        {/* Mobile: login or admin icon */}
         <div className="md:hidden">
-          <Radio className="w-5 h-5 text-wave-gray" />
+          {!isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => login()}
+              aria-label="Login"
+              className="text-wave-gray hover:text-white transition-colors"
+              data-ocid="nav.login.mobile.button"
+            >
+              <LogIn className="w-5 h-5" />
+            </button>
+          ) : (
+            <Radio className="w-5 h-5 text-wave-gray" />
+          )}
         </div>
       </div>
     </header>

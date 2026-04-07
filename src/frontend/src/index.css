@@ -116,28 +116,30 @@
 }
 
 /* ── Listen On icons ──────────────────────────────────────────────── */
-/* PNG logos: desaturate + brighten to white by default, full color on hover */
+/* PNG logos: full color by default, darken on hover */
 .listen-on-icon-png img {
-  filter: grayscale(1) brightness(10);
-  transition: filter 0.2s ease;
+  filter: none;
+  transition: filter 0.2s ease, transform 0.2s ease;
 }
-.listen-on-rss:hover img {
-  filter: none; /* reveals orange RSS brand color */
-}
-.listen-on-amazon:hover img {
-  filter: none; /* reveals Amazon Music brand color */
+.listen-on-icon-png:hover img {
+  filter: brightness(0.75);
 }
 
-/* SVG icons: white by default, brand color on hover */
+/* SVG icons: brand color by default, darken on hover */
 .listen-on-icon-svg {
-  color: #ffffff;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
-.listen-on-spotify:hover {
+.listen-on-spotify {
   color: #1db954;
 }
-.listen-on-apple:hover {
+.listen-on-spotify:hover {
+  color: #169c44;
+}
+.listen-on-apple {
   color: #b150e2;
+}
+.listen-on-apple:hover {
+  color: #8f3fbd;
 }
 
 /* RSS show notes HTML rendering */
