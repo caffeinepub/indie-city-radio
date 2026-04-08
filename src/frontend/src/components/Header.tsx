@@ -1,16 +1,28 @@
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { Link } from "@tanstack/react-router";
-import { LogIn, Radio } from "lucide-react";
+import { LogIn, LogOut, Radio } from "lucide-react";
 
 export default function Header() {
   const isAdmin = useIsAdmin();
-  const { identity, login } = useInternetIdentity();
-  const isLoggedIn = !!identity;
+  const {
+    identity,
+    login,
+    clear: logout,
+    loginStatus,
+    isInitializing,
+  } = useInternetIdentity();
+
+  // Auth state is only confirmed once initialization is done.
+  // During initialization, treat as "not logged in" so Login button shows
+  // immediately rather than flashing in/out.
+  const isLoggedIn = !isInitializing && !!identity;
+  // loginStatus === "logging-in" means user clicked Login and popup is open
+  const isLoggingIn = loginStatus === "logging-in";
 
   const navLinks = [
-    { label: "EPISODES", to: "/episodes", external: false },
-    { label: "RSS FEED", to: "/rss", external: false },
+    { label: "EPISODES", to: "/episodes" },
+    { label: "RSS FEED", to: "/rss" },
   ];
 
   return (
@@ -33,7 +45,7 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Nav */}
+        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((item) => (
             <Link
@@ -57,8 +69,8 @@ export default function Header() {
             SUBMIT MUSIC
           </a>
 
-          {/* Admin link — only for admins */}
-          {isAdmin && (
+          {/* Admin link — only for admins that are logged in */}
+          {isLoggedIn && isAdmin && (
             <Link
               to="/admin"
               className="text-xs font-semibold tracking-widest text-wave-gray hover:text-white transition-colors duration-200"
@@ -68,22 +80,37 @@ export default function Header() {
             </Link>
           )}
 
-          {/* Login button — always shown when not logged in */}
+          {/* Login button — always shown when not logged in (including during init) */}
           {!isLoggedIn && (
             <button
               type="button"
               onClick={() => login()}
-              className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-wave-gray hover:text-white transition-colors duration-200"
+              disabled={isLoggingIn}
+              className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-wave-gray hover:text-white transition-colors duration-200 disabled:opacity-50"
               data-ocid="nav.login.button"
               aria-label="Sign in with Internet Identity"
             >
               <LogIn className="w-3.5 h-3.5" />
-              LOGIN
+              {isLoggingIn ? "SIGNING IN..." : "LOGIN"}
+            </button>
+          )}
+
+          {/* Logout button — shown when logged in */}
+          {isLoggedIn && (
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-wave-gray hover:text-white transition-colors duration-200"
+              data-ocid="nav.logout.button"
+              aria-label="Sign out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              LOGOUT
             </button>
           )}
         </nav>
 
-        {/* Mobile: login or radio icon */}
+        {/* Mobile nav */}
         <div className="md:hidden flex items-center gap-3">
           <a
             href="https://indiecity-music-ar6.caffeine.xyz/submit"
@@ -94,18 +121,27 @@ export default function Header() {
           >
             SUBMIT
           </a>
-          {!isLoggedIn ? (
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => logout()}
+              aria-label="Logout"
+              className="text-wave-gray hover:text-white transition-colors"
+              data-ocid="nav.logout.mobile.button"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          ) : (
             <button
               type="button"
               onClick={() => login()}
+              disabled={isLoggingIn}
               aria-label="Login"
-              className="text-wave-gray hover:text-white transition-colors"
+              className="text-wave-gray hover:text-white transition-colors disabled:opacity-50"
               data-ocid="nav.login.mobile.button"
             >
               <LogIn className="w-5 h-5" />
             </button>
-          ) : (
-            <Radio className="w-5 h-5 text-wave-gray" />
           )}
         </div>
       </div>
