@@ -6,6 +6,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import Footer from "./components/Footer";
@@ -19,6 +20,15 @@ import HomePage from "./pages/HomePage";
 import RssEpisodeDetailPage from "./pages/RssEpisodeDetailPage";
 import RssPage from "./pages/RssPage";
 
+function ScrollToTop() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on route change only
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function RootLayout() {
   const { currentEpisode } = usePlayer();
 
@@ -28,6 +38,7 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-wave-dark">
+      <ScrollToTop />
       <Header />
       <main className={`flex-1${currentEpisode ? " pb-24" : ""}`}>
         <Outlet />

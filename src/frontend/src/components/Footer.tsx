@@ -9,9 +9,17 @@ export default function Footer() {
   const isAdmin = useIsAdmin();
 
   const navLinks = [
-    { label: "Episodes", to: "/" },
-    { label: "RSS Feed", to: "/rss" },
-    ...(isAdmin ? [{ label: "Admin", to: "/admin" }] : []),
+    { label: "Episodes", to: "/episodes", external: false, href: "" },
+    { label: "RSS Feed", to: "/rss", external: false, href: "" },
+    ...(isAdmin
+      ? [{ label: "Admin", to: "/admin", external: false, href: "" }]
+      : []),
+    {
+      label: "Submit Music",
+      to: "",
+      external: true,
+      href: "https://indiecity-music-ar6.caffeine.xyz/submit",
+    },
   ];
 
   return (
@@ -45,15 +53,27 @@ export default function Footer() {
               Navigate
             </h4>
             <nav className="flex flex-col gap-2">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="text-sm text-wave-gray hover:text-white transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navLinks.map((item) =>
+                item.external ? (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-wave-blue hover:text-white transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="text-sm text-wave-gray hover:text-white transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ),
+              )}
             </nav>
           </div>
 

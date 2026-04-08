@@ -9,9 +9,8 @@ export default function Header() {
   const isLoggedIn = !!identity;
 
   const navLinks = [
-    { label: "EPISODES", to: "/episodes" },
-    { label: "RSS FEED", to: "/rss" },
-    ...(isAdmin ? [{ label: "ADMIN", to: "/admin" }] : []),
+    { label: "EPISODES", to: "/episodes", external: false },
+    { label: "RSS FEED", to: "/rss", external: false },
   ];
 
   return (
@@ -47,7 +46,29 @@ export default function Header() {
             </Link>
           ))}
 
-          {/* Login button — only shown when not logged in and not admin */}
+          {/* Submit Music — external link */}
+          <a
+            href="https://indiecity-music-ar6.caffeine.xyz/submit"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold tracking-widest text-wave-blue hover:text-white border border-wave-blue/40 hover:border-wave-blue px-3 py-1 rounded-full transition-colors duration-200"
+            data-ocid="nav.submit_music.link"
+          >
+            SUBMIT MUSIC
+          </a>
+
+          {/* Admin link — only for admins */}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="text-xs font-semibold tracking-widest text-wave-gray hover:text-white transition-colors duration-200"
+              data-ocid="nav.admin.link"
+            >
+              ADMIN
+            </Link>
+          )}
+
+          {/* Login button — always shown when not logged in */}
           {!isLoggedIn && (
             <button
               type="button"
@@ -62,8 +83,17 @@ export default function Header() {
           )}
         </nav>
 
-        {/* Mobile: login or admin icon */}
-        <div className="md:hidden">
+        {/* Mobile: login or radio icon */}
+        <div className="md:hidden flex items-center gap-3">
+          <a
+            href="https://indiecity-music-ar6.caffeine.xyz/submit"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold tracking-widest text-wave-blue border border-wave-blue/40 px-2 py-0.5 rounded-full"
+            data-ocid="nav.submit_music.mobile.link"
+          >
+            SUBMIT
+          </a>
           {!isLoggedIn ? (
             <button
               type="button"

@@ -4,15 +4,20 @@ import {
   ArrowLeft,
   BookOpen,
   Calendar,
+  Check,
   ChevronLeft,
   ChevronRight,
   Clock,
+  Copy,
   ExternalLink,
   Pause,
   Play,
   Radio,
+  Share2,
+  X,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 import { usePlayer } from "../context/PlayerContext";
 import {
   formatChapterTime,
@@ -71,6 +76,199 @@ function sanitizeHtml(html: string): string {
       .replace(/href\s*=\s*'javascript:[^']*'/gi, "href='#'")
       // Open external links in new tab safely
       .replace(/<a\s/gi, '<a target="_blank" rel="noopener noreferrer" ')
+  );
+}
+
+function ShareModal({
+  title,
+  onClose,
+}: {
+  title: string;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const url = window.location.href;
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(`${title} — Indie City Radio`);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback for older browsers
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const shareLinks = [
+    {
+      label: "X (Twitter)",
+      href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+      bg: "#000000",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className="w-5 h-5 fill-current"
+          aria-hidden="true"
+        >
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+      ),
+    },
+    {
+      label: "Bluesky",
+      href: `https://bsky.app/intent/compose?text=${encodedTitle}+${encodedUrl}`,
+      bg: "#0085FF",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className="w-5 h-5 fill-current"
+          aria-hidden="true"
+        >
+          <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.204-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z" />
+        </svg>
+      ),
+    },
+    {
+      label: "Facebook",
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      bg: "#1877F2",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          className="w-5 h-5 fill-current"
+          aria-hidden="true"
+        >
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <AnimatePresence>
+      {/* Backdrop */}
+      <motion.div
+        key="share-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        style={{ background: "rgba(0,0,0,0.75)" }}
+        onClick={onClose}
+      >
+        {/* Modal */}
+        <motion.div
+          key="share-modal"
+          initial={{ opacity: 0, scale: 0.92, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.92, y: 16 }}
+          transition={{ duration: 0.25, type: "spring", bounce: 0.2 }}
+          className="w-full max-w-md rounded-2xl border border-wave-border p-6 space-y-5 shadow-glow"
+          style={{ background: "#1A1C24" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <h2 className="font-display font-bold text-white text-lg flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-wave-blue" />
+              Share Episode
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close share dialog"
+              className="text-wave-gray hover:text-white transition-colors p-1 rounded-lg hover:bg-wave-border/50"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Episode title */}
+          <p className="text-sm text-wave-gray leading-snug line-clamp-2">
+            {title}
+          </p>
+
+          {/* Copy link */}
+          <div
+            className="flex items-center gap-2 p-3 rounded-xl border border-wave-border"
+            style={{ background: "#12131A" }}
+          >
+            <span className="flex-1 text-xs text-wave-gray truncate font-mono">
+              {url}
+            </span>
+            <button
+              type="button"
+              onClick={handleCopy}
+              data-ocid="share.copy_link.button"
+              className="flex items-center gap-1.5 text-xs font-bold tracking-widest px-3 py-1.5 rounded-lg transition-all duration-200 flex-shrink-0"
+              style={{
+                background: copied
+                  ? "rgba(71,188,150,0.2)"
+                  : "rgba(71,188,150,0.15)",
+                color: "#47bc96",
+                border: "1px solid rgba(71,188,150,0.3)",
+              }}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Share buttons */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold tracking-widest text-wave-gray/60 uppercase">
+              Share to
+            </p>
+            <div className="flex gap-3">
+              {shareLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-ocid={`share.${link.label.toLowerCase().replace(/[^a-z]/g, "_")}.link`}
+                  className="flex-1 flex flex-col items-center gap-2 py-3 px-2 rounded-xl border border-wave-border hover:border-transparent transition-all duration-200 group text-white"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = link.bg;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background =
+                      "rgba(255,255,255,0.04)";
+                  }}
+                  aria-label={`Share on ${link.label}`}
+                >
+                  {link.icon}
+                  <span className="text-xs font-semibold text-wave-gray group-hover:text-white transition-colors">
+                    {link.label}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -152,6 +350,7 @@ export default function RssEpisodeDetailPage({
   const { episodes, isLoading } = useRssFeed();
   const { playEpisode, pauseEpisode, seekTo, currentEpisode, isPlaying } =
     usePlayer();
+  const [shareOpen, setShareOpen] = useState(false);
 
   const decodedGuid = decodeURIComponent(guid);
   const episodeIndex = episodes.findIndex((e) => e.guid === decodedGuid);
@@ -238,6 +437,9 @@ export default function RssEpisodeDetailPage({
 
   return (
     <div className="grid-bg min-h-screen">
+      {shareOpen && (
+        <ShareModal title={episode.title} onClose={() => setShareOpen(false)} />
+      )}
       <div className="max-w-4xl mx-auto px-6 py-10">
         {/* Back button */}
         <motion.div
@@ -317,25 +519,38 @@ export default function RssEpisodeDetailPage({
                 </p>
               )}
 
-              {/* Play button */}
-              <button
-                type="button"
-                onClick={handlePlay}
-                className="flex items-center gap-3 gradient-btn font-bold px-6 py-3.5 rounded-full text-sm tracking-wider uppercase shadow-glow hover:opacity-90 transition-opacity"
-                data-ocid="rss_episode.play.button"
-              >
-                {isCurrentlyPlaying ? (
-                  <>
-                    <Pause className="w-5 h-5 fill-current" />
-                    Pause Episode
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5 fill-current" />
-                    {isCurrentEpisode ? "Resume Episode" : "Play Episode"}
-                  </>
-                )}
-              </button>
+              {/* Play + Share buttons */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handlePlay}
+                  className="flex items-center gap-3 gradient-btn font-bold px-6 py-3.5 rounded-full text-sm tracking-wider uppercase shadow-glow hover:opacity-90 transition-opacity"
+                  data-ocid="rss_episode.play.button"
+                >
+                  {isCurrentlyPlaying ? (
+                    <>
+                      <Pause className="w-5 h-5 fill-current" />
+                      Pause Episode
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 fill-current" />
+                      {isCurrentEpisode ? "Resume Episode" : "Play Episode"}
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(true)}
+                  className="flex items-center gap-2 px-4 py-3.5 rounded-full text-sm font-bold tracking-wider uppercase transition-colors duration-200 border border-wave-border hover:border-wave-blue text-wave-gray hover:text-white"
+                  data-ocid="rss_episode.share.button"
+                  aria-label="Share episode"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </button>
+              </div>
 
               {isCurrentlyPlaying && (
                 <motion.div
